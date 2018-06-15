@@ -271,7 +271,7 @@ function compile::ninja() {
   gn gen $outputdir --args="$gn_args"
   pushd $outputdir >/dev/null
     # ninja -v -C  .
-    ninja -C  .
+    ninja -C  . peerconnection system_wrappers:field_trial_default
   popd >/dev/null
 }
 
@@ -447,7 +447,7 @@ function compile() {
 
       if [ $COMBINE_LIBRARIES = 1 ]; then
         # Method 1: Merge the static .a/.lib libraries.
-        combine::static $platform "out/$target_cpu/$cfg" libwebrtc_full
+        combine::objects $platform "out/$target_cpu/$cfg" libwebrtc_full
         
         # Method 2: Merge .o/.obj objects to create the library, although results 
         # have been inconsistent so the static merging method is default.
