@@ -34,7 +34,7 @@ OPTIONS:
 EOF
 }
 
-while getopts :o:b:r:t:c:l:e:n:T:CxDd OPTION; do
+while getopts :o:b:r:t:c:l:e:n:a:T:CxDd OPTION; do
   case $OPTION in
   o) OUTDIR=$OPTARG ;;
   b) BRANCH=$OPTARG ;;
@@ -44,6 +44,7 @@ while getopts :o:b:r:t:c:l:e:n:T:CxDd OPTION; do
   l) BLACKLIST=$OPTARG ;;
   e) ENABLE_RTTI=$OPTARG ;;
   n) CONFIGS=$OPTARG ;;
+  a) EXTRA_ARGS=$OPTARG ;;
   T) BUILD_TARGET=$OPTARG ;;
   x) BUILD_ONLY=1 ;;
   C) CLEAN=1 ;;
@@ -60,6 +61,7 @@ ENABLE_RTTI=${ENABLE_RTTI:-1}
 ENABLE_ITERATOR_DEBUGGING=0
 ENABLE_CLANG=0
 ENABLE_STATIC_LIBS=1
+EXTRA_ARGS=${EXTRA_ARGS:-""}
 BUILD_TARGET=${BUILD_TARGET:-""}
 CLEAN=${CLEAN:-0}
 BUILD_ONLY=${BUILD_ONLY:-0}
@@ -120,7 +122,7 @@ if [ $BUILD_ONLY = 0 ]; then
 fi
 
 echo Compiling WebRTC
-compile $PLATFORM $OUTDIR "$TARGET_OS" "$TARGET_CPU" "$CONFIGS" "$BLACKLIST" "$BUILD_TARGET" "$CLEAN"
+compile $PLATFORM $OUTDIR "$TARGET_OS" "$TARGET_CPU" "$CONFIGS" "$BLACKLIST" "$BUILD_TARGET" "$CLEAN" "$EXTRA_ARGS"
 
 # Default PACKAGE_FILENAME is <projectname>-<rev-number>-<short-rev-sha>-<target-os>-<target-cpu>
 PACKAGE_FILENAME=$(interpret-pattern "$PACKAGE_FILENAME_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER")
