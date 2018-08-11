@@ -417,11 +417,12 @@ function compile() {
   local blacklist="$6"
   local build_target="$7"
   local build_clean="$8"
+  local extra_args="$9"
 
   # Set default default common  and target args.
   # `rtc_include_tests=false`: Disable all unit tests
   # `treat_warnings_as_errors=false`: Don't error out on compiler warnings
-  local common_args="rtc_include_tests=false treat_warnings_as_errors=false"
+  local common_args="rtc_include_tests=false treat_warnings_as_errors=false $extra_args"
   local target_args="target_os=\"$target_os\" target_cpu=\"$target_cpu\""
 
   # Build WebRTC with RTII enbled.
