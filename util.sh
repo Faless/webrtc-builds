@@ -266,12 +266,20 @@ function patch() {
 function compile::ninja() {
   local outputdir="$1"
   local gn_args="$2"
+  local build_target="$3"
+  local build_clean="$4"
 
   echo "Generating project files with: $gn_args"
+
+  if [ $build_clean = 1 ]; then
+    gn clean $outputdir --args="$gn_args"
+  fi
+
   gn gen $outputdir --args="$gn_args"
   pushd $outputdir >/dev/null
     # ninja -v -C  .
-    ninja -C  . peerconnection system_wrappers:field_trial_default
+    ninja -C  . $build_target
+    #peerconnection system_wrappers:field_trial_default
   popd >/dev/null
 }
 
@@ -407,7 +415,9 @@ function compile() {
   local target_os="$3"
   local target_cpu="$4"
   local configs="$5"
-  local blacklist="$5"
+  local blacklist="$6"
+  local build_target="$7"
+  local build_clean="$8"
 
   # Set default default common  and target args.
   # `rtc_include_tests=false`: Disable all unit tests
@@ -443,7 +453,7 @@ function compile() {
   pushd $outdir/src >/dev/null
     for cfg in $configs; do
       [ "$cfg" = 'Release' ] && common_args+=' is_debug=false strip_debug_info=true symbol_level=0'
-      compile::ninja "out/$target_cpu/$cfg" "$common_args $target_args"
+      compile::ninja "out/$target_cpu/$cfg" "$common_args $target_args" "$build_target" "$build_clean"
 
       if [ $COMBINE_LIBRARIES = 1 ]; then
         # Method 1: Merge the static .a/.lib libraries.
