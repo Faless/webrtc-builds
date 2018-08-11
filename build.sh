@@ -25,6 +25,8 @@ OPTIONS:
    -l BLACKLIST   List *.o objects to exclude from the static library.
    -e ENABLE_RTTI Compile WebRTC with RTII enabled. Default is '1'.
    -n CONFIGS     Build configurations, space-separated. Default is 'Debug Release'. Other values can be 'Debug', 'Release'.
+   -T TARGETS     Build only specified gn targets (e.g. "peerconnection ")
+   -C             Run gn clean before building
    -x             Express build mode. Skip repo sync and dependency checks, just build, compile and package.
    -D             [Linux] Generate a debian package
    -d             Debug mode. Print all executed commands.
@@ -32,7 +34,7 @@ OPTIONS:
 EOF
 }
 
-while getopts :o:b:r:t:c:l:e:n:xDd OPTION; do
+while getopts :o:b:r:t:c:l:e:n:T:CxDd OPTION; do
   case $OPTION in
   o) OUTDIR=$OPTARG ;;
   b) BRANCH=$OPTARG ;;
@@ -42,7 +44,9 @@ while getopts :o:b:r:t:c:l:e:n:xDd OPTION; do
   l) BLACKLIST=$OPTARG ;;
   e) ENABLE_RTTI=$OPTARG ;;
   n) CONFIGS=$OPTARG ;;
+  T) BUILD_TARGET=$OPTARG ;;
   x) BUILD_ONLY=1 ;;
+  C) CLEAN=1 ;;
   D) PACKAGE_AS_DEBIAN=1 ;;
   d) DEBUG=1 ;;
   ?) usage; exit 1 ;;
@@ -56,6 +60,8 @@ ENABLE_RTTI=${ENABLE_RTTI:-1}
 ENABLE_ITERATOR_DEBUGGING=0
 ENABLE_CLANG=0
 ENABLE_STATIC_LIBS=1
+BUILD_TARGET=${BUILD_TARGET:-""}
+CLEAN=${CLEAN:-0}
 BUILD_ONLY=${BUILD_ONLY:-0}
 DEBUG=${DEBUG:-0}
 CONFIGS=${CONFIGS:-Debug Release}
@@ -114,7 +120,7 @@ if [ $BUILD_ONLY = 0 ]; then
 fi
 
 echo Compiling WebRTC
-compile $PLATFORM $OUTDIR "$TARGET_OS" "$TARGET_CPU" "$CONFIGS" "$BLACKLIST"
+compile $PLATFORM $OUTDIR "$TARGET_OS" "$TARGET_CPU" "$CONFIGS" "$BLACKLIST" "$BUILD_TARGET" "$CLEAN"
 
 # Default PACKAGE_FILENAME is <projectname>-<rev-number>-<short-rev-sha>-<target-os>-<target-cpu>
 PACKAGE_FILENAME=$(interpret-pattern "$PACKAGE_FILENAME_PATTERN" "$PLATFORM" "$OUTDIR" "$TARGET_OS" "$TARGET_CPU" "$BRANCH" "$REVISION" "$REVISION_NUMBER")
