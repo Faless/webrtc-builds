@@ -447,7 +447,7 @@ function compile() {
   # like the clang compiled libraries, so the option is there.
   # Set `is_clang=false` and `use_sysroot=false` to build using gcc.
   if [ $ENABLE_CLANG = 0 ]; then
-    common_args+=" is_clang=false"
+    [ $target_os != 'android' ] && common_args+=" is_clang=false"
     [ $platform = 'linux' ] && common_args+=" use_sysroot=false linux_use_bundled_binutils=false use_custom_libcxx=false use_custom_libcxx_for_host=false"
   fi
 
