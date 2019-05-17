@@ -54,8 +54,9 @@ function ensure-package() {
   local name="$1"
   local binary="${2:-$1}"
   if ! which $binary > /dev/null ; then
-    sudo apt-get update -qq
-    sudo apt-get install -y $name
+    #sudo apt-get update -qq
+    #sudo apt-get install -y $name
+    echo ""
   fi
 }
 
@@ -124,8 +125,9 @@ function check::build::env() {
       echo "*** which is required for things like msttcorefonts.           ***"
     fi
     if ! which sudo > /dev/null ; then
-      apt-get update -qq
-      apt-get install -y sudo
+      #apt-get update -qq
+      #apt-get install -y sudo
+      echo ""
     fi
     ensure-package curl
     ensure-package git
@@ -175,13 +177,15 @@ function check::webrtc::deps() {
   case $platform in
   linux)
     # Automatically accepts ttf-mscorefonts EULA
-    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
-    sudo $outdir/src/build/install-build-deps.sh --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
+    #echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
+    #sudo $outdir/src/build/install-build-deps.sh --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
+    echo ""
     ;;
   esac
 
   if [ $target_os = 'android' ]; then
-    sudo $outdir/src/build/install-build-deps-android.sh
+    #sudo $outdir/src/build/install-build-deps-android.sh
+    echo ""
   fi
 }
 
@@ -225,7 +229,7 @@ function checkout() {
   popd >/dev/null
 
   # Checkout the specific revision after fetch
-  gclient sync --force --revision $revision
+  gclient sync -D --force --revision $revision
 
   # Cache the target OS
   echo $target_os > $outdir/.webrtcbuilds_target_os
@@ -458,7 +462,7 @@ function compile() {
 
       if [ $COMBINE_LIBRARIES = 1 ]; then
         # Method 1: Merge the static .a/.lib libraries.
-        combine::objects $platform "out/$target_cpu/$cfg" libwebrtc_full
+        combine::static $platform "out/$target_cpu/$cfg" libwebrtc_full
         
         # Method 2: Merge .o/.obj objects to create the library, although results 
         # have been inconsistent so the static merging method is default.
