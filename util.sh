@@ -71,10 +71,10 @@ function has-binary () {
 # Setup Visual Studio build environment variables.
 function init-msenv() {
 
-  # Rudimentary support for VS2017 in default install location due to
+  # Rudimentary support for VS2019 in default install location due to
   # lack of VS1S0COMNTOOLS environment variable.
-  if [ -d "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build" ]; then
-    vcvars_path="C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build"
+  if [ -d "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build" ]; then
+    vcvars_path="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build"
   elif [ ! -z "$VS140COMNTOOLS" ]; then
     vcvars_path="${VS140COMNTOOLS}../../VC"
   else
@@ -338,8 +338,7 @@ function combine::objects() {
     # Combine all objects into one static library
     case $platform in
     win)
-      # TODO: Support VS 2017
-      "$VS140COMNTOOLS../../VC/bin/lib" /OUT:$libname.lib @$libname.list
+      lib.exe /OUT:$libname.lib @$libname.list
       ;;
     *)
       # Combine *.o objects using ar
