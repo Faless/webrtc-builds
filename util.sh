@@ -225,7 +225,7 @@ function checkout() {
   popd >/dev/null
 
   # Checkout the specific revision after fetch
-  gclient sync --force --revision $revision
+  gclient sync -D --force --revision $revision
 
   # Cache the target OS
   echo $target_os > $outdir/.webrtcbuilds_target_os
