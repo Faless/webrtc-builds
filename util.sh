@@ -241,21 +241,21 @@ function patch() {
   local outdir="$2"
 
   pushd $outdir/src >/dev/null
+    case $platform in
+    win)
+      # Monkey patch webrtc build configuration to force linking with /MDd /MD
+      # Component builds are not allowed, but at least we can get runtime dynamic linking.
+      pushd build/config/win >/dev/null
+	      sed -i.bak 's|:static_crt|:dynamic_crt|' BUILD.gn
+      popd >/dev/null
+      ;;
+    *)
+      ;;
+    esac
+
     # This removes the examples from being built.
     sed -i.bak 's|"//webrtc/examples",|#"//webrtc/examples",|' BUILD.gn
 
-    # This patches a GN error with the video_loopback executable depending on a
-    # test but since we disable building tests GN detects a dependency error.
-    # Replacing the outer conditional with 'rtc_include_tests' works around this.
-    # sed -i.bak 's|if (!build_with_chromium)|if (rtc_include_tests)|' webrtc/BUILD.gn
-
-    # Enable RTTI if required by removing the 'no_rtti' compiler flag.
-    # This fixes issues when compiling WebRTC with other libraries that have RTTI enabled.
-    # if [ $ENABLE_RTTI = 1 ]; then
-    #   echo "Enabling RTTI"
-    #   sed -i.bak 's|"//build/config/compiler:no_rtti",|#"//build/config/compiler:no_rtti",|' \
-    #     build/config/BUILDCONFIG.gn
-    # fi
   popd >/dev/null
 }
 
