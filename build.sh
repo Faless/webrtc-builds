@@ -98,7 +98,7 @@ echo Checking depot-tools
 check::depot-tools $PLATFORM $DEPOT_TOOLS_URL $DEPOT_TOOLS_DIR
 
 if [ ! -z $BRANCH ]; then
-  REVISION=$(git ls-remote $REPO_URL --heads $BRANCH | head --lines 1 | cut --fields 1) || \
+  REVISION=$(git ls-remote $REPO_URL --heads $BRANCH | head -n 1 | cut -f 1) || \
     { echo "Cound not get branch revision" && exit 1; }
    echo "Building branch: $BRANCH"
 else
