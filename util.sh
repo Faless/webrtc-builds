@@ -438,7 +438,7 @@ function compile() {
   # This will cause errors like: undefined reference to `non-virtual thunk to
   # cricket::VideoCapturer::AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>*,
   # rtc::VideoSinkWants const&)'
-  [ $ENABLE_ITERATOR_DEBUGGING = 0 ] && common_args+=" enable_iterator_debugging=false"
+  [ $ENABLE_ITERATOR_DEBUGGING = 1 ] && common_args+=" enable_iterator_debugging=true"
 
   # Use clang or gcc to compile WebRTC.
   # The default compiler used by Chromium/WebRTC is clang, so there are frequent
