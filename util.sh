@@ -511,7 +511,7 @@ function package::prepare() {
       # gflags, ffmpeg, openh264, openmax_dl, winsdk_samples, yasm
       find $header_source_dir -name '*.h' -o -name README -o -name LICENSE -o -name COPYING | \
         grep './third_party' | \
-        grep -E 'boringssl|expat/files|jsoncpp/source/json|libjpeg|libjpeg_turbo|libsrtp|libyuv|libvpx|opus|protobuf|usrsctp/usrsctpout/usrsctpout' | \
+        grep -E 'abseil-cpp|boringssl|expat/files|jsoncpp/source/json|libjpeg|libjpeg_turbo|libsrtp|libyuv|libvpx|opus|protobuf|usrsctp/usrsctpout/usrsctpout' | \
         xargs -I '{}' $CP --parents '{}' $outdir/$package_filename/include
 
     popd >/dev/null
