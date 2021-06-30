@@ -437,17 +437,6 @@ function compile() {
   # enforced.By default Debug builds are dynamic and Release builds are static.
   [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=false"
 
-  # Use clang or gcc to compile WebRTC.
-  # The default compiler used by Chromium/WebRTC is clang, so there are frequent
-  # bugs and incompatabilities with gcc, especially with newer versions >= 4.8.
-  # Use gcc at your own risk, but it may be necessary if your compiler doesn't
-  # like the clang compiled libraries, so the option is there.
-  # Set `is_clang=false` and `use_sysroot=false` to build using gcc.
-  if [ $ENABLE_CLANG = 0 ]; then
-    common_args+=" is_clang=false"
-    [ $platform = 'linux' ] && common_args+=" use_sysroot=false linux_use_bundled_binutils=false use_custom_libcxx=false use_custom_libcxx_for_host=false"
-  fi
-
   pushd $outdir/src >/dev/null
     for cfg in $configs; do
       [ "$cfg" = 'Release' ] && common_args+=' is_debug=false strip_debug_info=true symbol_level=0'
