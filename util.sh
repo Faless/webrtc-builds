@@ -389,6 +389,13 @@ function combine::static() {
     win)
       lib.exe /OUT:$libname.lib @$libname.list
       ;;
+    mac|ios)
+      local libnames=""
+      while read a; do
+        libnames="$libnames $a"
+      done <$libname.list
+      libtool -static -o $libname.a $libnames
+      ;;
     *)
       # Combine *.a static libraries
       echo "CREATE $libname.a" >$libname.ar
