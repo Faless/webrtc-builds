@@ -439,13 +439,6 @@ function compile() {
   # enforced.By default Debug builds are dynamic and Release builds are static.
   [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=false"
 
-  # `enable_iterator_debugging=false`: Disable libstdc++ debugging facilities
-  # unless all your compiled applications and dependencies define _GLIBCXX_DEBUG=1.
-  # This will cause errors like: undefined reference to `non-virtual thunk to
-  # cricket::VideoCapturer::AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>*,
-  # rtc::VideoSinkWants const&)'
-  [ $ENABLE_ITERATOR_DEBUGGING = 1 ] && common_args+=" enable_iterator_debugging=true"
-
   # Use clang or gcc to compile WebRTC.
   # The default compiler used by Chromium/WebRTC is clang, so there are frequent
   # bugs and incompatabilities with gcc, especially with newer versions >= 4.8.
