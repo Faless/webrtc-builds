@@ -380,9 +380,9 @@ function combine::static() {
     if [ $platform = 'win' ]; then
       local whitelist="boringssl.dll.lib|protobuf_lite.dll.lib|webrtc\.lib|field_trial_default.lib|metrics_default.lib"
     else
-      local whitelist="boringssl\.a|protobuf_full\.a|webrtc\.a|field_trial_default\.a|metrics_default\.a"
+      local whitelist="boringssl\.a|protobuf_lite\.a|webrtc\.a|field_trial_default\.a|metrics_default\.a"
     fi
-    cat .ninja_log | tr '\t' '\n' | grep -E $whitelist | sort -u >$libname.list
+    cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $whitelist | sort -u >$libname.list
 
     # Combine all objects into one static library
     case $platform in
