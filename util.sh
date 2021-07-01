@@ -70,10 +70,10 @@ function has-binary () {
 # Setup Visual Studio build environment variables.
 function init-msenv() {
 
-  # Rudimentary support for VS2017 in default install location due to
+  # Rudimentary support for VS2019 in default install location due to
   # lack of VS1S0COMNTOOLS environment variable.
-  if [ -d "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build" ]; then
-    vcvars_path="C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build"
+  if [ -d "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build" ]; then
+    vcvars_path="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build"
   elif [ ! -z "$VS140COMNTOOLS" ]; then
     vcvars_path="${VS140COMNTOOLS}../../VC"
   else
@@ -225,7 +225,7 @@ function checkout() {
   popd >/dev/null
 
   # Checkout the specific revision after fetch
-  gclient sync --force --revision $revision
+  gclient sync -D --force --revision $revision
 
   # Cache the target OS
   echo $target_os > $outdir/.webrtcbuilds_target_os
@@ -241,21 +241,21 @@ function patch() {
   local outdir="$2"
 
   pushd $outdir/src >/dev/null
+    case $platform in
+    win)
+      # Monkey patch webrtc build configuration to force linking with /MDd /MD
+      # Component builds are not allowed, but at least we can get runtime dynamic linking.
+      pushd build/config/win >/dev/null
+	      sed -i.bak 's|:static_crt|:dynamic_crt|' BUILD.gn
+      popd >/dev/null
+      ;;
+    *)
+      ;;
+    esac
+
     # This removes the examples from being built.
     sed -i.bak 's|"//webrtc/examples",|#"//webrtc/examples",|' BUILD.gn
 
-    # This patches a GN error with the video_loopback executable depending on a
-    # test but since we disable building tests GN detects a dependency error.
-    # Replacing the outer conditional with 'rtc_include_tests' works around this.
-    # sed -i.bak 's|if (!build_with_chromium)|if (rtc_include_tests)|' webrtc/BUILD.gn
-
-    # Enable RTTI if required by removing the 'no_rtti' compiler flag.
-    # This fixes issues when compiling WebRTC with other libraries that have RTTI enabled.
-    # if [ $ENABLE_RTTI = 1 ]; then
-    #   echo "Enabling RTTI"
-    #   sed -i.bak 's|"//build/config/compiler:no_rtti",|#"//build/config/compiler:no_rtti",|' \
-    #     build/config/BUILDCONFIG.gn
-    # fi
   popd >/dev/null
 }
 
@@ -266,12 +266,19 @@ function patch() {
 function compile::ninja() {
   local outputdir="$1"
   local gn_args="$2"
+  local build_target="$3"
+  local build_clean="$4"
 
   echo "Generating project files with: $gn_args"
+
+  if [ $build_clean = 1 ]; then
+    gn clean $outputdir --args="$gn_args"
+  fi
+
   gn gen $outputdir --args="$gn_args"
   pushd $outputdir >/dev/null
     # ninja -v -C  .
-    ninja -C  .
+    ninja -C  . $build_target
   popd >/dev/null
 }
 
@@ -326,8 +333,7 @@ function combine::objects() {
     # Combine all objects into one static library
     case $platform in
     win)
-      # TODO: Support VS 2017
-      "$VS140COMNTOOLS../../VC/bin/lib" /OUT:$libname.lib @$libname.list
+      lib.exe /OUT:$libname.lib @$libname.list
       ;;
     *)
       # Combine *.o objects using ar
@@ -372,15 +378,21 @@ function combine::static() {
     if [ $platform = 'win' ]; then
       local whitelist="boringssl.dll.lib|protobuf_lite.dll.lib|webrtc\.lib|field_trial_default.lib|metrics_default.lib"
     else
-      local whitelist="boringssl\.a|protobuf_full\.a|webrtc\.a|field_trial_default\.a|metrics_default\.a"
+      local whitelist="boringssl\.a|protobuf_lite\.a|webrtc\.a|field_trial_default\.a|metrics_default\.a"
     fi
-    cat .ninja_log | tr '\t' '\n' | grep -E $whitelist | sort -u >$libname.list
+    cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $whitelist | sort -u >$libname.list
 
     # Combine all objects into one static library
     case $platform in
     win)
-      # TODO: Support VS 2017
-      "$VS140COMNTOOLS../../VC/bin/lib" /OUT:$libname.lib @$libname.list
+      lib.exe /OUT:$libname.lib @$libname.list
+      ;;
+    mac|ios)
+      local libnames=""
+      while read a; do
+        libnames="$libnames $a"
+      done <$libname.list
+      libtool -static -o $libname.a $libnames
       ;;
     *)
       # Combine *.a static libraries
@@ -407,12 +419,15 @@ function compile() {
   local target_os="$3"
   local target_cpu="$4"
   local configs="$5"
-  local blacklist="$5"
+  local blacklist="$6"
+  local build_target="$7"
+  local build_clean="$8"
+  local extra_args="$9"
 
   # Set default default common  and target args.
   # `rtc_include_tests=false`: Disable all unit tests
   # `treat_warnings_as_errors=false`: Don't error out on compiler warnings
-  local common_args="rtc_include_tests=false treat_warnings_as_errors=false"
+  local common_args="rtc_include_tests=false treat_warnings_as_errors=false $extra_args"
   local target_args="target_os=\"$target_os\" target_cpu=\"$target_cpu\""
 
   # Build WebRTC with RTII enbled.
@@ -422,28 +437,10 @@ function compile() {
   # enforced.By default Debug builds are dynamic and Release builds are static.
   [ $ENABLE_STATIC_LIBS = 1 ] && common_args+=" is_component_build=false"
 
-  # `enable_iterator_debugging=false`: Disable libstdc++ debugging facilities
-  # unless all your compiled applications and dependencies define _GLIBCXX_DEBUG=1.
-  # This will cause errors like: undefined reference to `non-virtual thunk to
-  # cricket::VideoCapturer::AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>*,
-  # rtc::VideoSinkWants const&)'
-  [ $ENABLE_ITERATOR_DEBUGGING = 0 ] && common_args+=" enable_iterator_debugging=false"
-
-  # Use clang or gcc to compile WebRTC.
-  # The default compiler used by Chromium/WebRTC is clang, so there are frequent
-  # bugs and incompatabilities with gcc, especially with newer versions >= 4.8.
-  # Use gcc at your own risk, but it may be necessary if your compiler doesn't
-  # like the clang compiled libraries, so the option is there.
-  # Set `is_clang=false` and `use_sysroot=false` to build using gcc.
-  if [ $ENABLE_CLANG = 0 ]; then
-    common_args+=" is_clang=false"
-    [ $platform = 'linux' ] && common_args+=" use_sysroot=false linux_use_bundled_binutils=false use_custom_libcxx=false use_custom_libcxx_for_host=false"
-  fi
-
   pushd $outdir/src >/dev/null
     for cfg in $configs; do
       [ "$cfg" = 'Release' ] && common_args+=' is_debug=false strip_debug_info=true symbol_level=0'
-      compile::ninja "out/$target_cpu/$cfg" "$common_args $target_args"
+      compile::ninja "out/$target_cpu/$cfg" "$common_args $target_args" "$build_target" "$build_clean"
 
       if [ $COMBINE_LIBRARIES = 1 ]; then
         # Method 1: Merge the static .a/.lib libraries.
@@ -501,7 +498,7 @@ function package::prepare() {
       # gflags, ffmpeg, openh264, openmax_dl, winsdk_samples, yasm
       find $header_source_dir -name '*.h' -o -name README -o -name LICENSE -o -name COPYING | \
         grep './third_party' | \
-        grep -E 'boringssl|expat/files|jsoncpp/source/json|libjpeg|libjpeg_turbo|libsrtp|libyuv|libvpx|opus|protobuf|usrsctp/usrsctpout/usrsctpout' | \
+        grep -E 'abseil-cpp|boringssl|expat/files|jsoncpp/source/json|libjpeg|libjpeg_turbo|libsrtp|libyuv|libvpx|opus|protobuf|usrsctp/usrsctpout/usrsctpout' | \
         xargs -I '{}' $CP --parents '{}' $outdir/$package_filename/include
 
     popd >/dev/null
