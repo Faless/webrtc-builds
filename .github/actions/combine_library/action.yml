@@ -1,0 +1,28 @@
+name: 'Combine libraries'
+description: 'Combine the WebRTC static libraries into one using platform specific tools.'
+inputs:
+  platform:
+    description: 'The platform we are building for (android, ios, linux, mac, win).'
+    required: true
+  builddir:
+    description: 'The the ninja build path.'
+    required: true
+outputs:
+  library:
+    description: "Full path to generated library."
+    value: ${{ steps.combine.outputs.library }}
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      id: combine
+      run: |
+        bash .github/actions/combine_library/combine.sh ${{ inputs.platform }} ${{ inputs.builddir }}
+        ls -l ${{ inputs.builddir }}
+        libname=libwebrtc_full
+        if [ "${{ inputs.platform }}" == "win" ]; then
+          libname=${libname}.lib
+        else
+          libname=${libname}.a
+        fi
+        echo "::set-output name=library::${{ inputs.builddir }}/${libname}"

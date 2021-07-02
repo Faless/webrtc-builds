@@ -1,0 +1,178 @@
+name: Builds matrix
+on: [push]
+
+# Global Settings
+env:
+  WEBRTC_BRANCH: branch-heads/4472
+  WEBRTC_URL: https://chromium.googlesource.com/external/webrtc
+  MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Android
+          - target_os: android
+            arch: arm
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+          - target_os: android
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+          - target_os: android
+            arch: x86
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+          - target_os: android
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+
+          # iOS
+          - target_os: ios
+            arch: arm
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+          - target_os: ios
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+          - target_os: ios
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+
+          # Linux
+          - target_os: linux
+            arch: x86
+            custom_gnargs: use_custom_libcxx=false use_glib=false
+            gclient_os: '["linux"]'
+            os: ubuntu-20.04
+          - target_os: linux
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false use_glib=false
+            gclient_os: '["linux"]'
+            os: ubuntu-20.04
+
+          # macOS
+          - target_os: mac
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["mac"]'
+            os: macos-latest
+          - target_os: mac
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["mac"]'
+            os: macos-latest
+
+          # Windows
+          - target_os: win
+            arch: x86
+            custom_gnargs: is_clang=false enable_iterator_debugging=true
+            gclient_os: '["win"]'
+            msvc_arch: amd64_x86
+            os: windows-2019
+          - target_os: win
+            arch: x64
+            custom_gnargs: is_clang=false enable_iterator_debugging=true
+            gclient_os: '["win"]'
+            msvc_arch: amd64_x86
+            os: windows-2019
+
+    env:
+      DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
+      DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+      GNARGS: 'is_component_build=false rtc_include_tests=false treat_warnings_as_errors=false rtc_build_examples=false use_rtti=true target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }}'
+      GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup MSVC environment
+        if: ${{ matrix.target_os == 'win' }}
+        shell: bash
+        run: |
+          '${{ env.MSVC_PATH }}\Auxiliary\Build\vcvarsall.bat' ${{ matrix.msvc_arch }}
+          MSVC_TOOLS=$(find '${{ env.MSVC_PATH }}\Tools\MSVC' -maxdepth 1 -type d | sort -r | head -n 1)
+          echo ${MSVC_TOOLS}'\bin\Hostx64\x64\' >> $GITHUB_PATH
+
+      - name: Install Linux dependencies
+        if: ${{ matrix.target_os == 'linux' }}
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get install clang gcc gcc-multilib g++ g++-multilib
+
+      - name: Install depot tools
+        shell: bash
+        run: |
+          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git $DEPOT_TOOLS
+          echo $DEPOT_TOOLS >> $GITHUB_PATH
+
+      # We should always be explicit with our flags usage here since it's gonna be sure to always set those flags
+      - name: Setup gclient build config
+        shell: bash
+        run: |
+          # Create config
+          mkdir out
+          cp misc/ci/gclient out/.gclient
+          echo 'target_os = ${{ matrix.gclient_os }}' >> out/.gclient
+
+      - name: Checkout WebRTC and run hooks
+        shell: bash
+        working-directory: out
+        run: |
+          REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision $REVISION
+
+      - name: Build - Debug
+        shell: bash
+        working-directory: out/src
+        run: |
+          gn gen out --args="${{ env.GNARGS }}"
+          ninja -C out webrtc
+
+      - name: Combine - Debug
+        uses: ./.github/actions/combine_library
+        id: combine-debug
+        with:
+          platform: ${{ matrix.target_os }}
+          builddir: out/src/out
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-debug
+          path: ${{ steps.combine-debug.outputs.library }}
+
+      # Release
+      - name: Build - Release
+        shell: bash
+        working-directory: out/src
+        run: |
+          echo "Clean up debug build to free up space"
+          rm -rf out
+          gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
+          ninja -C out webrtc
+
+      - name: Combine - Release
+        uses: ./.github/actions/combine_library
+        id: combine-release
+        with:
+          platform: ${{ matrix.target_os }}
+          builddir: out/src/out
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-release
+          path: ${{ steps.combine-release.outputs.library }}
