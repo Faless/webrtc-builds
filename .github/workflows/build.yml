@@ -136,6 +136,18 @@ jobs:
           REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
           gclient sync --no_bootstrap --shallow --no-history -vv --revision $REVISION
 
+      - name: Copy headers
+        uses: ./.github/actions/copy_headers
+        with:
+          srcdir: out/src
+          outdir: ${{ github.workspace }}/include
+
+      - name: Upload header artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-release
+          path: ${{ steps.combine-release.outputs.library }}
+
       - name: Build - Debug
         shell: bash
         working-directory: out/src
@@ -150,7 +162,8 @@ jobs:
           platform: ${{ matrix.target_os }}
           builddir: out/src/out
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload debug artifact
+        uses: actions/upload-artifact@v2
         with:
           name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-debug
           path: ${{ steps.combine-debug.outputs.library }}
@@ -178,7 +191,8 @@ jobs:
           platform: ${{ matrix.target_os }}
           builddir: out/src/out
 
-      - uses: actions/upload-artifact@v2
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v2
         with:
           name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-release
           path: ${{ steps.combine-release.outputs.library }}
