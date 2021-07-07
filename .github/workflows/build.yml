@@ -104,8 +104,7 @@ jobs:
         shell: bash
         run: |
           echo ${{ github.workspace }}
-          echo ${HOME}
-          touch ${HOME}/lol
+          echo $(dirname ${{ github.workspace }})
           pushd '${{ github.workspace }}' >/dev/null
             DIR=$(pwd)
           popd >/dev/null
