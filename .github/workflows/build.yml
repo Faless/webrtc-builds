@@ -250,6 +250,7 @@ jobs:
         working-directory: ${{ matrix.target_os }}
         shell: bash
         run: |
+          ls -R
           mkdir include
           tar -xf include.tar -C include
           tar -czf $OUTPUT_NAME.tar.gz include lib
