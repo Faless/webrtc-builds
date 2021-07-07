@@ -9,13 +9,12 @@ inputs:
     required: true
 outputs:
   library:
-    description: "Full path to generated library."
+    description: "Path to generated library."
     value: ${{ steps.combine.outputs.library }}
 runs:
   using: "composite"
   steps:
     - shell: bash
-      id: combine
       run: |
         bash .github/actions/combine_library/combine.sh ${{ inputs.platform }} ${{ inputs.builddir }}
         ls -l ${{ inputs.builddir }}

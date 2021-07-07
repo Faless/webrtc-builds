@@ -100,10 +100,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Copy headers
+        id: copy-headers-test
+        uses: ./.github/actions/copy_headers
+        with:
+          srcdir: ./
+          outdir: ${{ github.workspace }}/include.tar
+
       - name: Test
         shell: bash
         run: |
-          find . -name "*.sh" -exec tar -cvf test.tar "{}" \;
+          find . -name "*.sh" -exec tar -rvf test.tar "{}" \;
           ls test.tar
           tar -tf test.tar
           exit 1
@@ -151,16 +158,17 @@ jobs:
           gclient sync --no_bootstrap --shallow --no-history -vv --revision $REVISION
 
       - name: Copy headers
+        id: copy-headers
         uses: ./.github/actions/copy_headers
         with:
           srcdir: out/src
-          outdir: ${{ github.workspace }}/include
+          outdir: ${{ github.workspace }}/include.tar
 
       - name: Upload header artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-release
-          path: ${{ github.workspace }}/include
+          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-include
+          path: ${{ github.workspace }}/include.tar
 
       - name: Build - Debug
         shell: bash

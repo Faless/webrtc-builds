@@ -1,11 +1,11 @@
-name: 'Copy required WebRTC header files.'
-description: 'Copy required WebRTC header files to be used by your application.'
+name: 'Tar required WebRTC header files.'
+description: 'Tar required WebRTC header files to be used by your application.'
 inputs:
   srcdir:
     description: 'The source dir where the WebRTC library has been checked out.'
     required: true
-  outdir:
-    description: 'The path where to copy the relevant headers.'
+  tarball:
+    description: 'Path of the output tarball (absolute or relative to the source directory).'
     required: true
   exclude:
     description: 'The paths to exclude from header copying'
@@ -15,27 +15,18 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-      id: copy-headers
+      working-directory: ${{ inputs.srcdir }}
       run: |
         set -x
-        if [ -z "${{ inputs.outdir }}" ]; then
-          echo "Invalid output dir ${{ inputs.outdir }}"
-          exit 1
-        fi
         if [ -z "${{ inputs.srcdir }}" ] || [ ! -d "${{ inputs.srcdir }}" ]; then
           echo "Invalid source dir ${{ inputs.srcdir }}"
           exit 1
         fi
-        mkdir -p "${{ inputs.outdir }}"
+        mkdir -p $(dirname "${{ inputs.tarball }}")
 
-        # OSX and their non-GNU commands :)
-        CP=cp
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          CP=gcp
-        fi
         for p in ${{ inputs.exclude }}
         do
           EXCLUDE="$EXCLUDE -not -path \"./${p}/*\""
         done
-        cd "${{ inputs.srcdir }}"
-        find . -type f $EXCLUDE -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) | xargs -I '{}' $CP --parents '{}' "${{ inputs.outdir }}"
+
+        find . -type f $EXCLUDE -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -exec tar -rvf "${{ inputs.tarball }}" "{}" \;
