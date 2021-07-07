@@ -100,21 +100,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Copy headers
-        id: copy-headers-test
-        uses: ./.github/actions/copy_headers
-        with:
-          srcdir: ./
-          tarball: ${{ github.workspace }}/include.tar
-
-      - name: Test
-        shell: bash
-        run: |
-          find . -name "*.sh" -exec tar -rvf test.tar "{}" \;
-          ls test.tar
-          tar -tf test.tar
-          exit 1
-
       - name: Setup MSVC environment
         if: ${{ matrix.target_os == 'win' }}
         shell: bash
@@ -128,12 +113,6 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get install clang gcc gcc-multilib g++ g++-multilib
-
-      - name: Install macOS GNU coreutils dependency
-        if: ${{ startsWith(matrix.os, 'macos') }}
-        run: |
-          # Need GNU cp for copying header files.
-          brew install coreutils
 
       - name: Install depot tools
         shell: bash
