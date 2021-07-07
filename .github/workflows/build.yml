@@ -106,7 +106,10 @@ jobs:
           echo ${{ github.workspace }}
           echo ${HOME}
           touch ${HOME}/lol
-          ls ${HOME}
+          pushd '${{ github.workspace }}' >/dev/null
+            DIR=$(pwd)
+          popd >/dev/null
+          echo $DIR
           echo "======= ENV:"
           env
           exit 1
