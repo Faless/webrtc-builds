@@ -106,6 +106,8 @@ jobs:
           echo ${HOME}
           touch ${HOME}/lol
           ls ${HOME}
+          echo "======= ENV:"
+          env
           exit 1
 
       - name: Setup MSVC environment
