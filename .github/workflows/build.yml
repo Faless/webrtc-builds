@@ -84,12 +84,12 @@ jobs:
 #            custom_gnargs: use_custom_libcxx=false use_glib=false
 #            gclient_os: '["linux"]'
 #            os: ubuntu-20.04
-#          - target_os: linux
-#            arch: x64
-#            custom_gnargs: use_custom_libcxx=false use_glib=false
-#            gclient_os: '["linux"]'
-#            os: ubuntu-20.04
-#
+          - target_os: linux
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false use_glib=false
+            gclient_os: '["linux"]'
+            os: ubuntu-20.04
+
 #          # macOS
 #          - target_os: mac
 #            arch: arm64
@@ -102,13 +102,13 @@ jobs:
 #            gclient_os: '["mac"]'
 #            os: macos-latest
 #
-          # Windows
-          - target_os: win
-            arch: x86
-            custom_gnargs: is_clang=false enable_iterator_debugging=true
-            gclient_os: '["win"]'
-            msvc_arch: amd64_x86
-            os: windows-2019
+#          # Windows
+#          - target_os: win
+#            arch: x86
+#            custom_gnargs: is_clang=false enable_iterator_debugging=true
+#            gclient_os: '["win"]'
+#            msvc_arch: amd64_x86
+#            os: windows-2019
 #          - target_os: win
 #            arch: x64
 #            custom_gnargs: is_clang=false enable_iterator_debugging=true
