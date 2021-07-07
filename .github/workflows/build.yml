@@ -105,7 +105,7 @@ jobs:
         uses: ./.github/actions/copy_headers
         with:
           srcdir: ./
-          outdir: ${{ github.workspace }}/include.tar
+          tarball: ${{ github.workspace }}/include.tar
 
       - name: Test
         shell: bash
@@ -162,7 +162,7 @@ jobs:
         uses: ./.github/actions/copy_headers
         with:
           srcdir: out/src
-          outdir: ${{ github.workspace }}/include.tar
+          tarball: ${{ github.workspace }}/include.tar
 
       - name: Upload header artifact
         uses: actions/upload-artifact@v2

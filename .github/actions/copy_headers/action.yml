@@ -19,9 +19,14 @@ runs:
       run: |
         set -x
         if [ -z "${{ inputs.srcdir }}" ] || [ ! -d "${{ inputs.srcdir }}" ]; then
-          echo "Invalid source dir ${{ inputs.srcdir }}"
+          echo "Invalid source dir: ${{ inputs.srcdir }}"
           exit 1
         fi
+        if [ -z "${{ inputs.tarball }}" ]; then
+          echo "Invalid output tarball: ${{ inputs.tarball }}"
+          exit 1
+        fi
+
         mkdir -p $(dirname "${{ inputs.tarball }}")
 
         for p in ${{ inputs.exclude }}
