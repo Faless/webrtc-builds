@@ -141,7 +141,12 @@ jobs:
         working-directory: out/src
         run: |
           gn gen out --args="${{ env.GNARGS }}"
-          ninja -C out webrtc
+          if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
+            # Windows 32 goes out memory, try compiling with only one job
+            ninja -C out webrtc -j1
+          else
+            ninja -C out webrtc
+          fi
 
       - name: Combine - Debug
         uses: ./.github/actions/combine_library
