@@ -4,30 +4,28 @@ inputs:
   srcdir:
     description: 'The source dir where the WebRTC library has been checked out.'
     required: true
-  tarball:
-    description: 'Path of the output tarball (absolute or relative to the source directory).'
-    required: true
   exclude:
     description: 'The paths to exclude from header copying'
     required: true
     default: out build buildtools third_party/blink third_party/llvm-build third_party/win_build_output third_party/android_ndk third_party/catapult third_party/googletest ios sdk
+outputs:
+  tarball:
+    description: "Path to generated tarball."
+    value: ${{ steps.tar-headers.outputs.library }}
 runs:
   using: "composite"
   steps:
     - shell: bash
+      id: tar-headers
       working-directory: "${{ inputs.srcdir }}"
       run: |
         set -x
-        if [ -z "${{ inputs.tarball }}" ]; then
-          echo "Invalid output tarball: ${{ inputs.tarball }}"
-          exit 1
-        fi
-
-        mkdir -p $(dirname "${{ inputs.tarball }}")
 
         for p in ${{ inputs.exclude }}
         do
           EXCLUDE="$EXCLUDE -path ./${p} -prune -o"
         done
 
-        find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rvf '${{ inputs.tarball }}' "{}" \;
+        TAR_FILE=headers.tar
+        find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rvf $TAR_FILE "{}" \;
+        echo "::set-output name=tarball::${TAR_FILE}"

@@ -100,19 +100,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Test
-        shell: bash
-        run: |
-          echo ${{ github.workspace }}
-          echo $(dirname '${{ github.workspace }}')
-          pushd '${{ github.workspace }}' >/dev/null
-            DIR=$(pwd)
-          popd >/dev/null
-          echo $DIR
-          echo "======= ENV:"
-          env
-          exit 1
-
       - name: Setup MSVC environment
         if: ${{ matrix.target_os == 'win' }}
         shell: bash
@@ -149,18 +136,17 @@ jobs:
           REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
           gclient sync --no_bootstrap --shallow --no-history -vv --revision $REVISION
 
-      - name: Copy headers
-        id: copy-headers
+      - name: Tar headers
+        id: tar-headers
         uses: ./.github/actions/copy_headers
         with:
           srcdir: out/src
-          tarball: ${{ github.workspace }}/include.tar
 
       - name: Upload header artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-include
-          path: ${{ github.workspace }}/include.tar
+          path: ${{ steps.tar-headers.outputs.tarball }}
 
       - name: Build - Debug
         shell: bash

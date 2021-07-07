@@ -15,6 +15,7 @@ runs:
   using: "composite"
   steps:
     - shell: bash
+      id: combine
       run: |
         bash .github/actions/combine_library/combine.sh ${{ inputs.platform }} ${{ inputs.builddir }}
         ls -l ${{ inputs.builddir }}
