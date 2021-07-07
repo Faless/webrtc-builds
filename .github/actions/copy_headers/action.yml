@@ -10,7 +10,7 @@ inputs:
   exclude:
     description: 'The paths to exclude from header copying'
     required: true
-    default: out build buildtools third_party/blink third_party/llvm-build
+    default: out build buildtools third_party/blink third_party/llvm-build third_party/win_build_output third_party/android_ndk third_party/catapult
 runs:
   using: "composite"
   steps:
@@ -30,4 +30,4 @@ runs:
           EXCLUDE="$EXCLUDE -path ./${p} -prune -o"
         done
 
-        find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rvf "${{ inputs.tarball }}" "{}" \;
+        find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rvf '${{ inputs.tarball }}' "{}" \;
