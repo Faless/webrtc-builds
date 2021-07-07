@@ -7,17 +7,21 @@ inputs:
   outdir:
     description: 'The path where to copy the relevant headers.'
     required: true
+  exclude:
+    description: 'The paths to exclude from header copying'
+    required: true
+    default: out build buildtools third_party/blink third_party/llvm-build
 runs:
   using: "composite"
   steps:
     - shell: bash
       id: copy-headers
       run: |
-        if [ -z "${{ inputs.outdir }}" ];
+        if [ -z "${{ inputs.outdir }}" ]; then
           echo "Invalid output dir ${{ inputs.outdir }}"
           exit 1
         fi
-        if [ -z "${{ inputs.srcdir }}" ] || [ ! -d "${{ inputs.srcdir }}" ];
+        if [ -z "${{ inputs.srcdir }}" ] || [ ! -d "${{ inputs.srcdir }}" ]; then
           echo "Invalid source dir ${{ inputs.srcdir }}"
           exit 1
         fi
@@ -28,6 +32,9 @@ runs:
         if [[ "$OSTYPE" == "darwin"* ]]; then
           CP=gcp
         fi
+        for p in ${{ inputs.exclude }}
+        do
+          EXCLUDE="$EXCLUDE -not -path './${p}/*'"
+        done
         cd "${{ inputs.srcdir }}"
-        find -type f -not -path './out/*' -not -path './build/*' -not -path './buildtools/*' -a \( -name '*.h' -o -name README -o -name LICENSE -o -name COPYING \) | \
-          xargs -I '{}' $CP --parents '{}' ${{ inputs.outdir }}
+        find -type f $EXCLUDE -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) | xargs -I '{}' $CP --parents '{}' ${{ inputs.outdir }}
