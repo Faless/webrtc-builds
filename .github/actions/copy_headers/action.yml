@@ -11,7 +11,7 @@ inputs:
 outputs:
   tarball:
     description: "Path to generated tarball."
-    value: ${{ steps.tar-headers.outputs.library }}
+    value: ${{ steps.tar-headers.outputs.tarball }}
 runs:
   using: "composite"
   steps:
