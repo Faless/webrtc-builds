@@ -20,10 +20,12 @@ jobs:
         shell: bash
         run: |
           REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
-          INTERNAL=$(curl --silent ${WEBRTC_URL}/+/$REVISION | egrep -o '{#([0-9]+)}' | tr -d '{}#')
+          INTERNAL=$(curl --silent ${WEBRTC_URL}/+/${REVISION} | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#')
+          NAME="webrtc-${INTERNAL}-${REVISION}"
           echo "Building branch: ${WEBRTC_URL}"
           echo "Revision ${REVISION}"
           echo "Internal revision: ${REVISION_INTERNAL}"
+          echo "Will build as ${NAME}"
           echo "::set-output name=revision::${REVISION}"
           echo "::set-output name=name::webrtc-${INTERNAL}-${REVISION}"
 
