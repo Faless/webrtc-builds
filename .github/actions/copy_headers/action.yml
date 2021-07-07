@@ -17,6 +17,7 @@ runs:
     - shell: bash
       id: copy-headers
       run: |
+        set -x
         if [ -z "${{ inputs.outdir }}" ]; then
           echo "Invalid output dir ${{ inputs.outdir }}"
           exit 1
