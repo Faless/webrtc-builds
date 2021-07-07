@@ -104,6 +104,8 @@ jobs:
         shell: bash
         run: |
           echo ${HOME}
+          touch ${HOME}/lol
+          ls ${HOME}
           exit 1
 
       - name: Setup MSVC environment
