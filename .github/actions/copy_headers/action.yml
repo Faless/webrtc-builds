@@ -27,7 +27,7 @@ runs:
 
         for p in ${{ inputs.exclude }}
         do
-          EXCLUDE="$EXCLUDE -path \"./${p}\" -prune -o"
+          EXCLUDE="$EXCLUDE -path ./${p} -prune -o"
         done
 
         find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rvf "${{ inputs.tarball }}" "{}" \;
