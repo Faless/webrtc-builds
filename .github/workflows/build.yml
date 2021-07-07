@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
-          INTERNAL=$(curl --silent ${WEBRTC_URL}/+/${REVISION} | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#')
+          INTERNAL=$(curl --silent ${WEBRTC_URL}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#')
           NAME="webrtc-${INTERNAL}-${REVISION}"
           echo "Building branch: ${WEBRTC_URL}"
           echo "Revision ${REVISION}"
