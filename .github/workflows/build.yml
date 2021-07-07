@@ -12,12 +12,8 @@ jobs:
     name: "Find git revision"
     runs-on: "ubuntu-20.04"
     outputs:
-      revision:
-        description: "Revision to be checked out."
-        value: ${{ steps.config.outputs.revision }}
-      internal:
-        description: "The internal WebRTC repo head reference."
-        value: ${{ steps.config.outputs.revision }}
+      revision: ${{ steps.config.outputs.revision }}
+      name: ${{ steps.config.outputs. }}
     steps:
       - name: Configure shared properties.
         id: config
@@ -121,6 +117,8 @@ jobs:
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
       GNARGS: 'is_component_build=false rtc_include_tests=false treat_warnings_as_errors=false rtc_build_examples=false use_rtti=true target_os=\"${{ matrix.target_os }}\" target_cpu=\"${{ matrix.arch }}\" ${{ matrix.custom_gnargs }}'
       GNARGS_RELEASE: "is_debug=false strip_debug_info=true symbol_level=0"
+      OUTPUT_NAME: ${{ needs.config.outputs.name }}-${{ matrix.target_os }}-${{ matrix.arch }}
+      TEMP_ARTIFACT: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v2
 
@@ -157,7 +155,7 @@ jobs:
         shell: bash
         working-directory: out
         run: |
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ config.outputs.revision }}
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.config.outputs.revision }}
 
       - name: Tar headers
         id: tar-headers
@@ -168,7 +166,7 @@ jobs:
       - name: Upload header artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-include
+          name: ${{ env.TEMP_ARTIFACT }}-headers
           path: ${{ steps.tar-headers.outputs.tarball }}
 
       - name: Build - Debug
@@ -188,7 +186,7 @@ jobs:
       - name: Upload debug artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-debug
+          name: ${{ env.TEMP_ARTIFACT }}-debug
           path: ${{ steps.combine-debug.outputs.library }}
 
       # Release
@@ -217,5 +215,42 @@ jobs:
       - name: Upload release artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-release
+          name: ${{ env.TEMP_ARTIFACT }}-release
           path: ${{ steps.combine-release.outputs.library }}
+
+      - name: Cleanup space
+        shell: bash
+        run: |
+          rm -rf out
+
+      - name: Download library artifact - Debug
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ matrix.target_os }}/lib/${{ matrix.arch }}/Debug/${{ steps.combine-release.outputs.library }}
+          name: ${{ env.TEMP_ARTIFACT }}-debug
+
+      - name: Download library artifact - Release
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ matrix.target_os }}/lib/${{ matrix.arch }}/Release/${{ steps.combine-release.outputs.library }}
+          name: ${{ env.TEMP_ARTIFACT }}-release
+
+      - name: Download includes
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ matrix.target_os }}/include.tar
+          name: ${{ env.TEMP_ARTIFACT }}-headers
+
+      - name: Pack full release artifact
+        working-directory: ${{ matrix.target_os }}/include.tar
+        shell: bash
+        run: |
+          mkdir include
+          tar -xf include.tar -C include
+          tar -czf $OUTPUT_NAME.tar.gz include lib
+
+      - name: Upload final artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.OUTPUT_NAME }}.tar.gz
+          path: ${{ env.OUTPUT_NAME }}.tar.gz
