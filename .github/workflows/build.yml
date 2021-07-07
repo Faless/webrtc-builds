@@ -247,7 +247,7 @@ jobs:
           name: ${{ env.TEMP_ARTIFACT }}-headers
 
       - name: Pack full release artifact
-        working-directory: ${{ matrix.target_os }}/include.tar
+        working-directory: ${{ matrix.target_os }}
         shell: bash
         run: |
           mkdir include
