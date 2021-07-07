@@ -8,8 +8,32 @@ env:
   MSVC_PATH: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
 
 jobs:
+  config:
+    name: "Find git revision"
+    runs-on: "ubuntu-20.04"
+    outputs:
+      revision:
+        description: "Revision to be checked out."
+        value: ${{ steps.config.outputs.revision }}
+      internal:
+        description: "The internal WebRTC repo head reference."
+        value: ${{ steps.config.outputs.revision }}
+    steps:
+      - name: Configure shared properties.
+        id: config
+        shell: bash
+        run: |
+          REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
+          INTERNAL=$(curl --silent ${WEBRTC_URL}/+/$REVISION | egrep -o '{#([0-9]+)}' | tr -d '{}#')
+          echo "Building branch: ${WEBRTC_URL}"
+          echo "Revision ${REVISION}"
+          echo "Internal revision: ${REVISION_INTERNAL}"
+          echo "::set-output name=revision::${REVISION}"
+          echo "::set-output name=internal::${INTERNAL}"
+
   build:
     name: "Build"
+    needs: config
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -133,8 +157,7 @@ jobs:
         shell: bash
         working-directory: out
         run: |
-          REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision $REVISION
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ config.outputs.revision }}
 
       - name: Tar headers
         id: tar-headers
