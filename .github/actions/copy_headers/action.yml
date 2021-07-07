@@ -38,4 +38,4 @@ runs:
           EXCLUDE="$EXCLUDE -not -path './${p}/*'"
         done
         cd "${{ inputs.srcdir }}"
-        find -type f $EXCLUDE -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) | xargs -I '{}' $CP --parents '{}' ${{ inputs.outdir }}
+        find -type f $EXCLUDE -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) | xargs -I '{}' $CP --parents '{}' '${{ inputs.outdir }}'

@@ -146,7 +146,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ github.job }}-${{ matrix.target_os }}-${{ matrix.arch }}-release
-          path: ${{ steps.combine-release.outputs.library }}
+          path: ${{ github.workspace }}/include
 
       - name: Build - Debug
         shell: bash
