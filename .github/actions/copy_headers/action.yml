@@ -27,5 +27,5 @@ runs:
         done
 
         TAR_FILE=headers.tar
-        find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rvf $TAR_FILE "{}" \;
+        find . $EXCLUDE -type f -a \( -name "*.h" -o -name LICENSE -o -name COPYING \) -print -exec tar -rf $TAR_FILE "{}" \;
         echo "::set-output name=tarball::$(pwd)/${TAR_FILE}"
