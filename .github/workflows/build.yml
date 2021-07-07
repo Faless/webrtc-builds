@@ -109,12 +109,12 @@ jobs:
 #            gclient_os: '["win"]'
 #            msvc_arch: amd64_x86
 #            os: windows-2019
-          - target_os: win
-            arch: x64
-            custom_gnargs: is_clang=false enable_iterator_debugging=true
-            gclient_os: '["win"]'
-            msvc_arch: amd64_x86
-            os: windows-2019
+#          - target_os: win
+#            arch: x64
+#            custom_gnargs: is_clang=false enable_iterator_debugging=true
+#            gclient_os: '["win"]'
+#            msvc_arch: amd64_x86
+#            os: windows-2019
 
     env:
       DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
