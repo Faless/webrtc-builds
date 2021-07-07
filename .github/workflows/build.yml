@@ -102,7 +102,9 @@ jobs:
 
       - name: Test
         run: |
-          tar -h
+          find . -name "*.sh" -exec tar -cvf test.tar
+          ls test.tar
+          tar -t test.tar
           exit 1
 
       - name: Setup MSVC environment
