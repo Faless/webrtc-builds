@@ -141,12 +141,7 @@ jobs:
         working-directory: out/src
         run: |
           gn gen out --args="${{ env.GNARGS }}"
-          if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
-            # Windows 32 goes out memory, try compiling with only one job
-            ninja -C out webrtc -j1
-          else
-            ninja -C out webrtc
-          fi
+          ninja -C out webrtc
 
       - name: Combine - Debug
         uses: ./.github/actions/combine_library
@@ -168,7 +163,13 @@ jobs:
           echo "Clean up debug build to free up space"
           rm -rf out
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
-          ninja -C out webrtc
+
+          if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
+            # Windows 32 goes out memory, try compiling with only one job
+            ninja -C out webrtc -j1
+          else
+            ninja -C out webrtc
+          fi
 
       - name: Combine - Release
         uses: ./.github/actions/combine_library
