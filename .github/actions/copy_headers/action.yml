@@ -15,13 +15,9 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-      working-directory: ${{ inputs.srcdir }}
+      working-directory: "${{ inputs.srcdir }}"
       run: |
         set -x
-        if [ -z "${{ inputs.srcdir }}" ] || [ ! -d "${{ inputs.srcdir }}" ]; then
-          echo "Invalid source dir: ${{ inputs.srcdir }}"
-          exit 1
-        fi
         if [ -z "${{ inputs.tarball }}" ]; then
           echo "Invalid output tarball: ${{ inputs.tarball }}"
           exit 1
