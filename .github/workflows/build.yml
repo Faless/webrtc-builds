@@ -13,7 +13,7 @@ jobs:
     runs-on: "ubuntu-20.04"
     outputs:
       revision: ${{ steps.config.outputs.revision }}
-      name: ${{ steps.config.outputs. }}
+      name: ${{ steps.config.outputs.name }}
     steps:
       - name: Configure shared properties.
         id: config
@@ -25,7 +25,7 @@ jobs:
           echo "Revision ${REVISION}"
           echo "Internal revision: ${REVISION_INTERNAL}"
           echo "::set-output name=revision::${REVISION}"
-          echo "::set-output name=internal::${INTERNAL}"
+          echo "::set-output name=name::webrtc-${INTERNAL}-${REVISION}"
 
   build:
     name: "Build"
