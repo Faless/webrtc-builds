@@ -204,7 +204,8 @@ jobs:
 
           if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
             # Windows 32 goes out memory, try compiling with only one job, retry few times
-            ninja -v -j1 -C out webrtc || ninja -v -j1 -C out webrtc || ninja -v -j1 -C out webrtc
+            alias nwin="ninja -v -j1 -C out webrtc"
+            nwin || nwin || nwin || nwin || nwin || nwin
           else
             ninja -v -C out webrtc
           fi
