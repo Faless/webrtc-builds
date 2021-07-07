@@ -100,6 +100,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Test
+        shell: bash
+        run: |
+          echo ${HOME}
+          exit 1
+
       - name: Setup MSVC environment
         if: ${{ matrix.target_os == 'win' }}
         shell: bash
