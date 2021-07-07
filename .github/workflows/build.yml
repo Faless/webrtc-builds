@@ -109,12 +109,12 @@ jobs:
 #            gclient_os: '["win"]'
 #            msvc_arch: amd64_x86
 #            os: windows-2019
-#          - target_os: win
-#            arch: x64
-#            custom_gnargs: is_clang=false enable_iterator_debugging=true
-#            gclient_os: '["win"]'
-#            msvc_arch: amd64_x86
-#            os: windows-2019
+          - target_os: win
+            arch: x64
+            custom_gnargs: is_clang=false enable_iterator_debugging=true
+            gclient_os: '["win"]'
+            msvc_arch: amd64_x86
+            os: windows-2019
 
     env:
       DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
@@ -204,8 +204,8 @@ jobs:
 
           if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
             # Windows 32 goes out memory, try compiling with only one job, retry few times
-            alias nwin="ninja -v -j1 -C out webrtc"
-            nwin || nwin || nwin || nwin || nwin || nwin
+            nwin="ninja -v -j1 -C out webrtc"
+            $nwin || $nwin || $nwin || $nwin || $nwin || $nwin
           else
             ninja -v -C out webrtc
           fi
