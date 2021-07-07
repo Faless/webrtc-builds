@@ -114,6 +114,12 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get install clang gcc gcc-multilib g++ g++-multilib
 
+      - name: Install macOS GNU coreutils dependency
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        run: |
+          # Need GNU cp for copying header files.
+          brew install coreutils
+
       - name: Install depot tools
         shell: bash
         run: |
