@@ -103,6 +103,7 @@ jobs:
       - name: Test
         shell: bash
         run: |
+          echo ${{ github.workspace }}
           echo ${HOME}
           touch ${HOME}/lol
           ls ${HOME}
