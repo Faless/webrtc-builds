@@ -33,7 +33,7 @@ runs:
         libname=libwebrtc_full.${libext}
 
         # Library allowlist filter
-        allowlist=$(echo ${{ inputs.allowlist }}\\.${libext} | sed "s/ /\.${libext}|/g")
+        allowlist=$(echo ${{ inputs.allowlist }}\\.${libext} | sed "s/ /\\\\.${libext}|/g")
 
         LIBS=$(cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $allowlist | sort -u)
         # Combine libraries based on platform-specific tools
