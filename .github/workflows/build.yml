@@ -103,12 +103,12 @@ jobs:
 #            os: macos-latest
 #
 #          # Windows
-#          - target_os: win
-#            arch: x86
-#            custom_gnargs: is_clang=false enable_iterator_debugging=true
-#            gclient_os: '["win"]'
-#            msvc_arch: amd64_x86
-#            os: windows-2019
+          - target_os: win
+            arch: x86
+            custom_gnargs: is_clang=false enable_iterator_debugging=true
+            gclient_os: '["win"]'
+            msvc_arch: amd64_x86
+            os: windows-2019
 #          - target_os: win
 #            arch: x64
 #            custom_gnargs: is_clang=false enable_iterator_debugging=true
@@ -200,7 +200,11 @@ jobs:
         run: |
           echo "Clean up debug build to free up space"
           rm -rf out
-          gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
+          if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
+            gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }} enable_libaom=false"
+          else
+            gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
+          fi
 
           if [ "${{ matrix.target_os }}" = "win" ] && [ "${{ matrix.arch }}" = "x86" ]; then
             # Windows 32 goes out memory, try compiling with only one job, retry few times
