@@ -40,82 +40,82 @@ jobs:
       matrix:
         include:
           # Android
-#          - target_os: android
-#            arch: arm
-#            custom_gnargs: use_custom_libcxx=false
-#            gclient_os: '["android", "unix"]'
-#            os: ubuntu-20.04
-#          - target_os: android
-#            arch: arm64
-#            custom_gnargs: use_custom_libcxx=false
-#            gclient_os: '["android", "unix"]'
-#            os: ubuntu-20.04
-#          - target_os: android
-#            arch: x86
-#            custom_gnargs: use_custom_libcxx=false
-#            gclient_os: '["android", "unix"]'
-#            os: ubuntu-20.04
-#          - target_os: android
-#            arch: x64
-#            custom_gnargs: use_custom_libcxx=false
-#            gclient_os: '["android", "unix"]'
-#            os: ubuntu-20.04
-#
-#          # iOS
-#          - target_os: ios
-#            arch: arm
-#            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
-#            gclient_os: '["ios", "mac"]'
-#            os: macos-latest
-#          - target_os: ios
-#            arch: arm64
-#            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
-#            gclient_os: '["ios", "mac"]'
-#            os: macos-latest
-#          - target_os: ios
-#            arch: x64
-#            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
-#            gclient_os: '["ios", "mac"]'
-#            os: macos-latest
-#
-#          # Linux
-#          - target_os: linux
-#            arch: x86
-#            custom_gnargs: use_custom_libcxx=false use_glib=false
-#            gclient_os: '["linux"]'
-#            os: ubuntu-20.04
+          - target_os: android
+            arch: arm
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+          - target_os: android
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+          - target_os: android
+            arch: x86
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+          - target_os: android
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["android", "unix"]'
+            os: ubuntu-20.04
+
+          # iOS
+          - target_os: ios
+            arch: arm
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+          - target_os: ios
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+          - target_os: ios
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false ios_enable_code_signing=false
+            gclient_os: '["ios", "mac"]'
+            os: macos-latest
+
+          # Linux
+          - target_os: linux
+            arch: x86
+            custom_gnargs: use_custom_libcxx=false use_glib=false
+            gclient_os: '["linux"]'
+            os: ubuntu-20.04
           - target_os: linux
             arch: x64
             custom_gnargs: use_custom_libcxx=false use_glib=false
             gclient_os: '["linux"]'
             os: ubuntu-20.04
 
-#          # macOS
-#          - target_os: mac
-#            arch: arm64
-#            custom_gnargs: use_custom_libcxx=false
-#            gclient_os: '["mac"]'
-#            os: macos-latest
-#          - target_os: mac
-#            arch: x64
-#            custom_gnargs: use_custom_libcxx=false
-#            gclient_os: '["mac"]'
-#            os: macos-latest
-#
-#          # Windows
+          # macOS
+          - target_os: mac
+            arch: arm64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["mac"]'
+            os: macos-latest
+          - target_os: mac
+            arch: x64
+            custom_gnargs: use_custom_libcxx=false
+            gclient_os: '["mac"]'
+            os: macos-latest
+
+          # Windows
           - target_os: win
             arch: x86
-            # Windows 32 goes out memory when building aom release
+            # Windows 32 goes out memory when building libaom release. Disable libaom.
             custom_gnargs: is_clang=false enable_iterator_debugging=true enable_libaom=false
             gclient_os: '["win"]'
             msvc_arch: amd64_x86
             os: windows-2019
-#          - target_os: win
-#            arch: x64
-#            custom_gnargs: is_clang=false enable_iterator_debugging=true
-#            gclient_os: '["win"]'
-#            msvc_arch: amd64_x86
-#            os: windows-2019
+          - target_os: win
+            arch: x64
+            custom_gnargs: is_clang=false enable_iterator_debugging=true
+            gclient_os: '["win"]'
+            msvc_arch: amd64_x86
+            os: windows-2019
 
     env:
       DEPOT_TOOLS: ${{ github.workspace }}/depot_tools
