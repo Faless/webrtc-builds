@@ -7,8 +7,8 @@ inputs:
   builddir:
     description: 'The the ninja build path.'
     required: true
-  whitelist:
-    description: 'The libraries to to copy objects from'
+  allowlist:
+    description: 'The libraries to copy objects from'
     required: true
     default: webrtc boringssl protobuf_lite field_trial_default metrics_default
 outputs:
@@ -23,40 +23,46 @@ runs:
       id: combine
       run: |
         set -x
-        libname=libwebrtc_full
-        whitelist=""
-        for lib in ${{ inputs.whitelist }}
-        do
-          whitelist="${lib}|"
-        done
-        whitelist="${whitelist:0:-1}"
 
-        LIBS=$(cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $whitelist | sort -u)
+        # Detect library extension.
+        platform=${{ inputs.platform }}
+        libext="a"
+        if [ "${platform}" = "win" ]; then
+          libext="lib"
+        fi
+        libname=libwebrtc_full.${libext}
+
+        # Library allowlist filter
+        allowlist=""
+        for lib in ${{ inputs.allowlist }}
+        do
+          allowlist="${allowlist}${lib}\.${libext}|"
+        done
+        allowlist="${allowlist:0:-1}"
+
+        LIBS=$(cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $allowlist | sort -u)
         # Combine libraries based on platform-specific tools
         case $platform in
         win)
           echo $LIBS | tr ' ' '\n' >$libname.list
           # LIB.exe from Microsoft C++ Toolset
-          lib.exe /OUT:$libname.lib @$libname.list
-          libname=$libname.lib
+          lib.exe /OUT:$libname @$libname.list
           ;;
         mac|ios)
           # libtool from XCode Command line tools
-          libtool -static -o $libname.a $LIBS
-          libname=$libname.a
+          libtool -static -o $libname $LIBS
           ;;
         *)
-          # GNU ar
-          echo "CREATE $libname.a" >$libname.ar
+          # GNU ar + runlib
+          echo "CREATE $libname" >$libname.ar
           for lib in $LIBS
           do
             echo "ADDLIB $a" >>$libname.ar
-          done <$libname.list
+          done
           echo "SAVE" >>$libname.ar
           echo "END" >>$libname.ar
           ar -M < $libname.ar
-          ranlib $libname.a
-          libname=$libname.a
+          ranlib $libname
           ;;
         esac
 
