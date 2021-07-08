@@ -231,19 +231,19 @@ jobs:
       - name: Download library artifact - Debug
         uses: actions/download-artifact@v2
         with:
-          path: ${{ matrix.target_os }}/lib/${{ matrix.arch }}/Debug/${{ steps.combine-release.outputs.library }}
+          path: ${{ matrix.target_os }}/debug
           name: ${{ env.TEMP_ARTIFACT }}-debug
 
       - name: Download library artifact - Release
         uses: actions/download-artifact@v2
         with:
-          path: ${{ matrix.target_os }}/lib/${{ matrix.arch }}/Release/${{ steps.combine-release.outputs.library }}
+          path: ${{ matrix.target_os }}/release
           name: ${{ env.TEMP_ARTIFACT }}-release
 
       - name: Download includes
         uses: actions/download-artifact@v2
         with:
-          path: ${{ matrix.target_os }}/include.tar
+          path: ${{ matrix.target_os }}
           name: ${{ env.TEMP_ARTIFACT }}-headers
 
       - name: Pack full release artifact
@@ -252,7 +252,12 @@ jobs:
         run: |
           ls -R
           mkdir include
-          tar -xf include.tar -C include
+          mkdir -p lib/${{ matrix.arch }}/Release
+          mkdir -p lib/${{ matrix.arch }}/Debug
+
+          tar -xf headers.tar -C include
+          mv release/${{ steps.combine-release.outputs.library }} lib/${{ matrix.arch }}/Release
+          mv debug/${{ steps.combine-debug.outputs.library }} lib/${{ matrix.arch }}/Debug
           tar -czf $OUTPUT_NAME.tar.gz include lib
 
       - name: Upload final artifact
