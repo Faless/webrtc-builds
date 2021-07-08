@@ -254,10 +254,12 @@ jobs:
         working-directory: ${{ matrix.target_os }}
         shell: bash
         run: |
+          set -x
           ls -R
           mkdir include
           tar -xf ${{ steps.tar-headers.outputs.tarball }} -C include
           tar -czf $OUTPUT_NAME.tar.gz include lib
+          ls -l
 
       - name: Upload final artifact
         uses: actions/upload-artifact@v2
