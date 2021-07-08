@@ -61,5 +61,5 @@ runs:
           ;;
         esac
 
-        ls -l ${{ inputs.builddir }}
+        ls -l
         echo "::set-output name=library::${libname}"
