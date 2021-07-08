@@ -10,7 +10,7 @@ inputs:
   allowlist:
     description: 'The libraries to copy objects from'
     required: true
-    default: webrtc boringssl protobuf_lite field_trial_default metrics_default
+    default: "webrtc boringssl protobuf_lite field_trial_default metrics_default"
 outputs:
   library:
     description: "Path to generated library."
@@ -33,12 +33,7 @@ runs:
         libname=libwebrtc_full.${libext}
 
         # Library allowlist filter
-        allowlist=""
-        for lib in ${{ inputs.allowlist }}
-        do
-          allowlist="${allowlist}${lib}\.${libext}|"
-        done
-        allowlist="${allowlist:0:-1}"
+        allowlist=$(echo ${{ inputs.allowlist }}\.${libext} | sed "s/ /\.${libext}|/g")
 
         LIBS=$(cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $allowlist | sort -u)
         # Combine libraries based on platform-specific tools
