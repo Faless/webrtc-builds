@@ -7,7 +7,7 @@ inputs:
   exclude:
     description: 'The paths to exclude from header copying'
     required: true
-    default: out build buildtools third_party/blink third_party/llvm-build third_party/win_build_output third_party/android_ndk third_party/catapult third_party/googletest ios sdk
+    default: out ios sdk examples test build buildtools third_party/blink third_party/llvm-build third_party/win_build_output third_party/android_ndk third_party/catapult third_party/googletest third_party/android_deps third_party/android_sdk third_party/crashpad third_party/perfetto third_party/hunspell third_party/icu third_party/khronos
 outputs:
   tarball:
     description: "Path to generated tarball."
