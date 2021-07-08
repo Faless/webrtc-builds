@@ -7,6 +7,10 @@ inputs:
   builddir:
     description: 'The the ninja build path.'
     required: true
+  whitelist:
+    description: 'The libraries to to copy objects from'
+    required: true
+    default: webrtc boringssl protobuf_lite field_trial_default metrics_default
 outputs:
   library:
     description: "Path to generated library."
@@ -15,14 +19,46 @@ runs:
   using: "composite"
   steps:
     - shell: bash
+      working-directory: ${{ inputs.builddir }}
       id: combine
       run: |
-        bash .github/actions/combine_library/combine.sh ${{ inputs.platform }} ${{ inputs.builddir }}
-        ls -l ${{ inputs.builddir }}
+        set -x
         libname=libwebrtc_full
-        if [ "${{ inputs.platform }}" == "win" ]; then
-          libname=${libname}.lib
-        else
-          libname=${libname}.a
-        fi
+        whitelist=""
+        for lib in ${{ inputs.whitelist }}
+        do
+          whitelist="${lib}|"
+        done
+        whitelist="${whitelist:0:-1}"
+
+        LIBS=$(cat .ninja_log | tr '\t' '\n' | grep -E "^obj/" | grep -E $whitelist | sort -u)
+        # Combine libraries based on platform-specific tools
+        case $platform in
+        win)
+          echo $LIBS | tr ' ' '\n' >$libname.list
+          # LIB.exe from Microsoft C++ Toolset
+          lib.exe /OUT:$libname.lib @$libname.list
+          libname=$libname.lib
+          ;;
+        mac|ios)
+          # libtool from XCode Command line tools
+          libtool -static -o $libname.a $LIBS
+          libname=$libname.a
+          ;;
+        *)
+          # GNU ar
+          echo "CREATE $libname.a" >$libname.ar
+          for lib in $LIBS
+          do
+            echo "ADDLIB $a" >>$libname.ar
+          done <$libname.list
+          echo "SAVE" >>$libname.ar
+          echo "END" >>$libname.ar
+          ar -M < $libname.ar
+          ranlib $libname.a
+          libname=$libname.a
+          ;;
+        esac
+
+        ls -l ${{ inputs.builddir }}
         echo "::set-output name=library::${libname}"
