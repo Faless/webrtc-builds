@@ -21,7 +21,7 @@ jobs:
         run: |
           REVISION=$(git ls-remote $WEBRTC_URL --heads $WEBRTC_BRANCH | head -n 1 | cut -f 1)
           INTERNAL=$(curl --silent ${WEBRTC_URL}/+/${REVISION}?format=TEXT | base64 -d | tail -1 | egrep -o '{#([0-9]+)}' | tr -d '{}#' | cut -c1-7)
-          NAME="webrtc-${INTERNAL}-${REVISION}"
+          NAME="webrtc-${INTERNAL}-${REVISION:0:7}"
 
           echo "Building branch: ${WEBRTC_URL}"
           echo "Revision: ${REVISION}"
@@ -210,7 +210,6 @@ jobs:
         working-directory: out/src
         run: |
           echo "Clean up debug build to free up space"
-          set -x
           rm -rf out
           gn gen out --args="${{ env.GNARGS }} ${{ env.GNARGS_RELEASE }}"
           ninja -v -C out webrtc
@@ -256,12 +255,9 @@ jobs:
         working-directory: ${{ matrix.target_os }}
         shell: bash
         run: |
-          set -x
-          ls -R
           mkdir include
           tar -xf ${{ steps.tar-headers.outputs.tarball }} -C include
           tar -czf $OUTPUT_NAME.tar.gz include lib
-          ls -l
 
       - name: Upload final artifact
         uses: actions/upload-artifact@v2
