@@ -172,6 +172,7 @@ jobs:
         with:
           name: ${{ env.TEMP_ARTIFACT }}-headers
           path: out/src/${{ steps.tar-headers.outputs.tarball }}
+          retention-days: 1
 
       - name: Build - Debug
         shell: bash
@@ -192,6 +193,7 @@ jobs:
         with:
           name: ${{ env.TEMP_ARTIFACT }}-debug
           path: out/src/out/${{ steps.combine-debug.outputs.library }}
+          retention-days: 1
 
       # Release
       - name: Build - Release
@@ -226,6 +228,7 @@ jobs:
         with:
           name: ${{ env.TEMP_ARTIFACT }}-release
           path: out/src/out/${{ steps.combine-release.outputs.library }}
+          retention-days: 1
 
       - name: Cleanup space
         shell: bash
