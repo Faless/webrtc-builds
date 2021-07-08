@@ -162,6 +162,14 @@ jobs:
         run: |
           gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.config.outputs.revision }}
 
+      - name: Patch the WebRTC sources (allow dynamic crt on windows)
+        if: ${{ matrix.target_os == 'win' }}
+        shell: bash
+        working-directory: out
+        run: |
+          sed -i 's|:static_crt|:dynamic_crt|' src/build/config/win/BUILD.gn
+          cat src/build/config/win/BUILD.gn
+
       - name: Tar headers
         id: tar-headers
         uses: ./.github/actions/copy_headers
