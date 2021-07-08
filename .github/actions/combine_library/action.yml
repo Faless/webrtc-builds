@@ -52,7 +52,7 @@ runs:
           echo "CREATE $libname" >$libname.ar
           for lib in $LIBS
           do
-            echo "ADDLIB $a" >>$libname.ar
+            echo "ADDLIB $lib" >>$libname.ar
           done
           echo "SAVE" >>$libname.ar
           echo "END" >>$libname.ar
