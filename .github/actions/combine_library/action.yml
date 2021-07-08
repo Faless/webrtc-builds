@@ -25,4 +25,4 @@ runs:
         else
           libname=${libname}.a
         fi
-        echo "::set-output name=library::${{ inputs.builddir }}/${libname}"
+        echo "::set-output name=library::${libname}"

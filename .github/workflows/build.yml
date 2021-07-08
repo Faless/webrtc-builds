@@ -171,7 +171,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.TEMP_ARTIFACT }}-headers
-          path: ${{ steps.tar-headers.outputs.tarball }}
+          path: out/src/${{ steps.tar-headers.outputs.tarball }}
 
       - name: Build - Debug
         shell: bash
@@ -191,7 +191,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.TEMP_ARTIFACT }}-debug
-          path: ${{ steps.combine-debug.outputs.library }}
+          path: out/src/out/${{ steps.combine-debug.outputs.library }}
 
       # Release
       - name: Build - Release
@@ -221,7 +221,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.TEMP_ARTIFACT }}-release
-          path: ${{ steps.combine-release.outputs.library }}
+          path: out/src/out/${{ steps.combine-release.outputs.library }}
 
       - name: Cleanup space
         shell: bash
@@ -231,13 +231,13 @@ jobs:
       - name: Download library artifact - Debug
         uses: actions/download-artifact@v2
         with:
-          path: ${{ matrix.target_os }}/debug
+          path: ${{ matrix.target_os }}/lib/${{ matrix.arch }}/Debug
           name: ${{ env.TEMP_ARTIFACT }}-debug
 
       - name: Download library artifact - Release
         uses: actions/download-artifact@v2
         with:
-          path: ${{ matrix.target_os }}/release
+          path: ${{ matrix.target_os }}/lib/${{ matrix.arch }}/Release
           name: ${{ env.TEMP_ARTIFACT }}-release
 
       - name: Download includes
@@ -252,12 +252,7 @@ jobs:
         run: |
           ls -R
           mkdir include
-          mkdir -p lib/${{ matrix.arch }}/Release
-          mkdir -p lib/${{ matrix.arch }}/Debug
-
-          tar -xf headers.tar -C include
-          mv release/${{ steps.combine-release.outputs.library }} lib/${{ matrix.arch }}/Release
-          mv debug/${{ steps.combine-debug.outputs.library }} lib/${{ matrix.arch }}/Debug
+          tar -xf ${{ steps.tar-headers.outputs.tarball }} -C include
           tar -czf $OUTPUT_NAME.tar.gz include lib
 
       - name: Upload final artifact
